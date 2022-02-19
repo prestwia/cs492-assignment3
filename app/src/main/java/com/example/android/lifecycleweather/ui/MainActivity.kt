@@ -10,6 +10,7 @@ import android.view.Menu
 import android.view.MenuItem
 import android.view.View
 import android.widget.TextView
+import androidx.activity.viewModels
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.android.volley.Request
@@ -47,10 +48,11 @@ const val OPENWEATHER_APPID = BuildConfig.OPENWEATHER_API_KEY
 class MainActivity : AppCompatActivity() {
     private val tag = "MainActivity"
     private val apiBaseUrl = "https://api.openweathermap.org/data/2.5"
+    private val viewModel: ForecastViewModel by viewModels()
 
     private lateinit var forecastAdapter: ForecastAdapter
 
-    private lateinit var requestQueue: RequestQueue
+    //private lateinit var requestQueue: RequestQueue
     private lateinit var forecastJsonAdapter: JsonAdapter<FiveDayForecast>
 
     private lateinit var forecastListRV: RecyclerView
@@ -71,7 +73,27 @@ class MainActivity : AppCompatActivity() {
         forecastListRV.setHasFixedSize(true)
         forecastListRV.adapter = forecastAdapter
 
-        requestQueue = Volley.newRequestQueue(this)
+        // requestQueue = Volley.newRequestQueue(this)
+
+        viewModel.loadingStatus.observe(this) { uiState ->
+            when (uiState) {
+                LoadingStatus.LOADING -> {
+                    loadingIndicator.visibility = View.VISIBLE
+                    forecastListRV.visibility = View.INVISIBLE
+                    loadingErrorTV.visibility = View.INVISIBLE
+                }
+                LoadingStatus.ERROR -> {
+                    loadingIndicator.visibility = View.INVISIBLE
+                    forecastListRV.visibility = View.INVISIBLE
+                    loadingErrorTV.visibility = View.VISIBLE
+                }
+                else -> {
+                    loadingIndicator.visibility = View.INVISIBLE
+                    forecastListRV.visibility = View.VISIBLE
+                    loadingErrorTV.visibility = View.INVISIBLE
+                }
+            }
+        }
 
         val moshi = Moshi.Builder()
             .add(OpenWeatherListJsonAdapter())
@@ -80,10 +102,15 @@ class MainActivity : AppCompatActivity() {
             .build()
         forecastJsonAdapter = moshi.adapter(FiveDayForecast::class.java)
 
-        fetchFiveDayForecast("Corvallis,OR,US", "imperial")
+        viewModel.searchResults.observe(this) { searchResults ->
+            forecastAdapter.updateForecast(searchResults)
+        }
+
+        viewModel.loadForecastResults("Corvallis,OR,USA")
+        //fetchFiveDayForecast("Corvallis,OR,US", "imperial")
     }
 
-    override fun onCreateOptionsMenu(menu: Menu?): Boolean {
+    override fun onCreateOptionsMenu(menu: Menu): Boolean {
         menuInflater.inflate(R.menu.activity_main, menu)
         return true
     }
@@ -106,32 +133,32 @@ class MainActivity : AppCompatActivity() {
      * @param units The type of weather units to fetch from the OpenWeather API.  Possible
      *   values are "standard", "metric", and "imperial".
      */
-    private fun fetchFiveDayForecast(city: String, units: String) {
-        val url = "$apiBaseUrl/forecast?q=$city&units=$units&appid=$OPENWEATHER_APPID"
-
-        val req = StringRequest(
-            Request.Method.GET,
-            url,
-            {
-                val results = forecastJsonAdapter.fromJson(it)
-                forecastAdapter.updateForecast(results)
-                supportActionBar?.title = forecastAdapter.forecastCity?.name
-                loadingIndicator.visibility = View.INVISIBLE
-                forecastListRV.visibility = View.VISIBLE
-            },
-            {
-                Log.d(tag, "Error fetching from $url: ${it.message}")
-                loadingErrorTV.text = getString(R.string.loading_error, it.message)
-                loadingIndicator.visibility = View.INVISIBLE
-                loadingErrorTV.visibility = View.VISIBLE
-            }
-        )
-
-        loadingIndicator.visibility = View.VISIBLE
-        forecastListRV.visibility = View.INVISIBLE
-        loadingErrorTV.visibility = View.INVISIBLE
-        requestQueue.add(req)
-    }
+//    private fun fetchFiveDayForecast(city: String, units: String) {
+//        val url = "$apiBaseUrl/forecast?q=$city&units=$units&appid=$OPENWEATHER_APPID"
+//
+//        val req = StringRequest(
+//            Request.Method.GET,
+//            url,
+//            {
+//                val results = forecastJsonAdapter.fromJson(it)
+//                forecastAdapter.updateForecast(results)
+//                supportActionBar?.title = forecastAdapter.forecastCity?.name
+//                loadingIndicator.visibility = View.INVISIBLE
+//                forecastListRV.visibility = View.VISIBLE
+//            },
+//            {
+//                Log.d(tag, "Error fetching from $url: ${it.message}")
+//                loadingErrorTV.text = getString(R.string.loading_error, it.message)
+//                loadingIndicator.visibility = View.INVISIBLE
+//                loadingErrorTV.visibility = View.VISIBLE
+//            }
+//        )
+//
+//        loadingIndicator.visibility = View.VISIBLE
+//        forecastListRV.visibility = View.INVISIBLE
+//        loadingErrorTV.visibility = View.INVISIBLE
+//        requestQueue.add(req)
+//    }
 
     private fun onForecastItemClick(forecastPeriod: ForecastPeriod) {
         val intent = Intent(this, ForecastDetailActivity::class.java).apply {

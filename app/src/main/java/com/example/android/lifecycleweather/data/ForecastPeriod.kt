@@ -3,7 +3,7 @@ package com.example.android.lifecycleweather.data
 import com.squareup.moshi.FromJson
 import java.io.Serializable
 
-data class ForecastPeriod(
+public data class ForecastPeriod(
     val epoch: Int,
     val highTemp: Int,
     val lowTemp: Int,
@@ -23,7 +23,7 @@ data class ForecastPeriod(
  * directly into a ForecastPeriod object.
  * ******************************************************************************************/
 
-data class OpenWeatherListJson(
+public data class OpenWeatherListJson(
     val dt: Int,
     val pop: Double,
     val main: OpenWeatherListMainJson,
@@ -32,21 +32,21 @@ data class OpenWeatherListJson(
     val weather: List<OpenWeatherListWeatherJson>
 )
 
-data class OpenWeatherListMainJson(
+public data class OpenWeatherListMainJson(
     val temp_min: Double,
     val temp_max: Double
 )
 
-data class OpenWeatherListCloudsJson(
+public data class OpenWeatherListCloudsJson(
     val all: Int
 )
 
-data class OpenWeatherListWindJson(
+public data class OpenWeatherListWindJson(
     val speed: Double,
     val deg: Int
 )
 
-data class OpenWeatherListWeatherJson(
+public data class OpenWeatherListWeatherJson(
     val description: String,
     val icon: String
 )

@@ -3,7 +3,7 @@ package com.example.android.lifecycleweather.data
 import com.squareup.moshi.FromJson
 import java.io.Serializable
 
-data class ForecastCity(
+public data class ForecastCity(
     val name: String,
     val lat: Double,
     val lon: Double,
@@ -18,13 +18,13 @@ data class ForecastCity(
  * a ForecastCity object.
  * ******************************************************************************************/
 
-data class OpenWeatherCityJson(
+public data class OpenWeatherCityJson(
     val name: String,
     val coord: OpenWeatherCityCoordJson,
     val timezone: Int
 )
 
-data class OpenWeatherCityCoordJson(
+public data class OpenWeatherCityCoordJson(
     val lat: Double,
     val lon: Double
 )
